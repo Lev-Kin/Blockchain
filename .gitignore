@@ -1,0 +1,7 @@
+# Project exclude paths
+/.gradle/
+/Blockchain/task/build/
+/Topics/Inner classes/Christmas tree/out/
+/Topics/Inner classes/Christmas tree/out/production/classes/
+/Topics/Inner classes/Your vehicle/out/
+/Topics/Inner classes/Your vehicle/out/production/classes/
