@@ -1,17 +1,21 @@
 package blockchain;
 
+import blockchain.logic.BlockManager;
+
+import java.util.Scanner;
+
 public class Main {
     public static void main(String[] args) {
 
-        Block[] blockchain = new Block[5];
-        blockchain[0] = new Block("0");
-        for (int i = 1; i < blockchain.length; i++) {
-            blockchain[i] = new Block(blockchain[i - 1].getHash());
-        }
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter how many zeros the hash must start with: ");
 
-        for (Block block : blockchain) {
-            System.out.println(block + "\n");
-        }
+        BlockManager manager = new BlockManager(scanner.nextInt(), null);
+        manager.createBlock();
+        manager.createBlock();
+        manager.createBlock();
+        manager.createBlock();
+        manager.createBlock();
     }
 }
 

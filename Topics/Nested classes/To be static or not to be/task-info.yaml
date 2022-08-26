@@ -1,0 +1,24 @@
+type: choice
+is_multiple_choice: false
+options:
+- text: Static nested class
+- text: Static nested class and local Inner class
+- text: You can't declare a nested class with word "static"
+- text: Of course, all of them!
+files:
+- name: src/Task.java
+  visible: true
+  text: |
+    // You can experiment here, it won’t be checked
+
+    public class Task {
+      public static void main(String[] args) {
+        // put your code here
+      }
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/11846#comment
+status: Solved
+record: -1
+custom_name: To be static or not to be?
+local_check: false

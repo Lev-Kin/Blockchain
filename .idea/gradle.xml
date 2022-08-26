@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -21,6 +22,14 @@
             <option value="$PROJECT_DIR$/Topics/Inner classes/Christmas tree" />
             <option value="$PROJECT_DIR$/Topics/Inner classes/Theory" />
             <option value="$PROJECT_DIR$/Topics/Inner classes/Your vehicle" />
+            <option value="$PROJECT_DIR$/Topics/Memento/Roll back" />
+            <option value="$PROJECT_DIR$/Topics/Memento/Theory" />
+            <option value="$PROJECT_DIR$/Topics/Memento/Use cases" />
+            <option value="$PROJECT_DIR$/Topics/Nested classes/Create class" />
+            <option value="$PROJECT_DIR$/Topics/Nested classes/Make slices" />
+            <option value="$PROJECT_DIR$/Topics/Nested classes/Scope, scope and scope" />
+            <option value="$PROJECT_DIR$/Topics/Nested classes/Theory" />
+            <option value="$PROJECT_DIR$/Topics/Nested classes/To be static or not to be" />
             <option value="$PROJECT_DIR$/util" />
           </set>
         </option>
