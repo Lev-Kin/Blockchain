@@ -235,6 +235,136 @@ files:
         }
     }
   learner_created: false
-feedback_link: https://hyperskill.org/projects/50/stages/273/implement#comment
-status: Unchecked
+- name: src/blockchain/logic/BlockManager.java
+  visible: true
+  text: |+
+    package blockchain.logic;
+
+    import java.math.BigInteger;
+    import java.nio.charset.StandardCharsets;
+    import java.security.MessageDigest;
+    import java.util.Date;
+    import java.util.Objects;
+    import java.util.Random;
+
+    public class BlockManager {
+        private final int zeros;
+        private Block block;
+
+        public BlockManager(int zeros, Block block) {
+            this.zeros = zeros;
+            this.block = Objects.requireNonNullElseGet(block, () ->
+                    new Block(BigInteger.ZERO,
+                            null,
+                            null,
+                            "0",
+                            null)
+            );
+        }
+
+        public void createBlock() {
+            long start = System.nanoTime();
+            BigInteger id = block.getId().add(BigInteger.ONE);
+            BigInteger timestamp = BigInteger.valueOf(new Date().getTime());
+
+            String magic;
+            String hash;
+
+            Random random = new Random();
+            do {
+                magic = String.valueOf(random.nextInt());
+                hash = applySha256(block.getHash(), magic, id, timestamp);
+            } while (!hash.startsWith("0".repeat(zeros)));
+
+            block = new Block(id, timestamp, block.getHash(), hash, magic);
+            long end = System.nanoTime() - start;
+            System.out.println("\n" + block);
+            System.out.println("Block was generating for " + end / 1_000_000_000 + " seconds");
+        }
+
+        public String applySha256(String prevHash, String magic, BigInteger id, BigInteger timestamp) {
+            String data = prevHash + magic + id + timestamp;
+            try {
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                byte[] hash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
+                StringBuilder hexes = new StringBuilder();
+                for (byte elem : hash) {
+                    String hex = Integer.toHexString(0xff & elem);
+                    if (hex.length() == 1) hexes.append('0');
+                    hexes.append(hex);
+                }
+                return hexes.toString();
+            } catch (Exception e) {
+                throw new RuntimeException();
+            }
+        }
+    }
+
+
+  learner_created: true
+- name: src/blockchain/logic/Block.java
+  visible: true
+  text: |+
+    package blockchain.logic;
+
+    import java.io.Serial;
+    import java.io.Serializable;
+    import java.math.BigInteger;
+
+
+    public final class Block implements Serializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+        private final BlockInfo info;
+        private final String hash;
+        private final String magic;
+
+        Block(BigInteger id, BigInteger timestamp, String prevHash, String hash, String magic) {
+            this.info = new BlockInfo(id, timestamp, prevHash);
+            this.hash = hash;
+            this.magic = magic;
+        }
+
+        public BigInteger getId() {
+            return info.id();
+        }
+
+        public String getHash() {
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "Block:\n" +
+                    "Id: " + info.id() + "\n" +
+                    "Timestamp: " + info.timestamp() + "\n" +
+                    "Magic number: " + magic + "\n" +
+                    "Hash of the previous block: \n" +
+                    info.prevHash() + "\n" +
+                    "Hash of the block: \n" +
+                    hash;
+        }
+    }
+
+
+
+  learner_created: true
+- name: src/blockchain/logic/BlockInfo.java
+  visible: true
+  text: |+
+    package blockchain.logic;
+
+    import java.math.BigInteger;
+
+    public record BlockInfo(BigInteger id, BigInteger timestamp, String prevHash) {
+
+    }
+
+
+  learner_created: true
+feedback_link: https://hyperskill.org/learn/step/5415#comment
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Sat, 27 Aug 2022 09:02:15 UTC
 record: -1

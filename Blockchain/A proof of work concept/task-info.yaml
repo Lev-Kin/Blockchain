@@ -306,9 +306,9 @@ files:
 - name: src/blockchain/logic/BlockInfo.java
   visible: true
   learner_created: true
-feedback_link: https://hyperskill.org/projects/50/stages/272/implement#comment
+feedback_link: https://hyperskill.org/learn/step/5414#comment
 status: Solved
 feedback:
   message: Congratulations!
   time: Fri, 26 Aug 2022 09:33:44 UTC
-record: -1
+record: 2

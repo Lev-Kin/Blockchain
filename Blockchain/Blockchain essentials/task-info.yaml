@@ -203,7 +203,7 @@ files:
 - name: src/blockchain/Block.java
   visible: true
   learner_created: true
-feedback_link: https://hyperskill.org/projects/50/stages/271/implement#comment
+feedback_link: https://hyperskill.org/learn/step/5413#comment
 status: Solved
 feedback:
   message: Congratulations!
