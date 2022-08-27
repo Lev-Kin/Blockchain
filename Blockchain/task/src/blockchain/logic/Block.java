@@ -12,10 +12,8 @@ public final class Block implements Serializable {
     private final String hash;
     private final String magic;
 
-    Block(BigInteger id, BigInteger timestamp, String prevHash, String hash, String magic) {
-        this.info = new BlockInfo(id, timestamp, prevHash);
-        this.hash = hash;
-        this.magic = magic;
+    Block(BigInteger id, BigInteger timestamp, String prevHash, String message, String hash, String magic) {
+        this(new BlockInfo(id, timestamp, prevHash, message), hash, magic);
     }
 
     Block(BlockInfo info, String hash, String magic) {
@@ -46,13 +44,12 @@ public final class Block implements Serializable {
 
     @Override
     public String toString() {
-        return  "Id: " + info.id() + "\n" +
+        return "Id: " + info.id() + "\n" +
                 "Timestamp: " + info.timestamp() + "\n" +
                 "Magic number: " + magic + "\n" +
-                "Hash of the previous block: \n" +
-                info.prevHash() + "\n" +
-                "Hash of the block: \n" +
-                hash;
+                "Hash of the previous block: \n" + info.prevHash() + "\n" +
+                "Hash of the block: \n" + hash + "\n" +
+                "Block data: " + info.message();
     }
 }
 

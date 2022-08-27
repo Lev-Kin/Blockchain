@@ -362,9 +362,12 @@ files:
 
 
   learner_created: true
+- name: src/blockchain/SerialOperator.java
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5415#comment
 status: Solved
 feedback:
   message: Congratulations!
   time: Sat, 27 Aug 2022 09:02:15 UTC
-record: -1
+record: 3

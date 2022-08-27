@@ -4,6 +4,6 @@ import java.io.Serializable;
 import java.math.BigInteger;
 
 
-public record BlockInfo(BigInteger id, BigInteger timestamp, String prevHash) implements Serializable {
-
+public record BlockInfo(BigInteger id, BigInteger timestamp, String prevHash, String message) implements Serializable {
 }
+
