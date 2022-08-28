@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+group 'com.genspark'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'commons-codec:commons-codec:1.15'
+}
+

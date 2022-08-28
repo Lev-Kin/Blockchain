@@ -1,9 +1,17 @@
 package blockchain.logic;
 
+import blockchain.Message;
+import blockchain.MessageManager;
+
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
+import java.util.List;
 
 public class BlockManager {
     private volatile int zeros;
@@ -16,14 +24,28 @@ public class BlockManager {
 
     public Block createBlock(BlockInfo info, String magic) {
         String hash = sha256(info, magic);
-        return validate(hash) ? new Block(info, hash, magic) : null;
+        return validate(hash) && verify(info.messages()) ? new Block(info, hash, magic) : null;
     }
 
-    public BlockInfo createBlockInfo(Block block, String message) {
+    public BlockInfo createBlockInfo(Block block, List<Message> messages) {
         BigInteger id = block == null ? BigInteger.ONE : block.getId().add(BigInteger.ONE);
         BigInteger timestamp = BigInteger.valueOf(new Date().getTime());
         String prevHash = block == null ? "0" : block.getHash();
-        return new BlockInfo(id, timestamp, prevHash, message.isBlank() ? "no messages" : "\n" + message);
+        return new BlockInfo(id, timestamp, prevHash, messages);
+    }
+
+    public boolean verify(List<Message> messages) {
+        for (var message : messages) {
+            try {
+                if (!MessageManager.verify(message)) {
+                    return false;
+                }
+            } catch (SignatureException | NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return true;
     }
 
     public synchronized void updateZeros(int time, int size) {
@@ -45,7 +67,7 @@ public class BlockManager {
     }
 
     public String sha256(BlockInfo info, String magic) {
-        return sha256(info.prevHash() + magic + info.id() + info.timestamp() + info.message());
+        return sha256(info.prevHash() + magic + info.id() + info.timestamp() + info.messages());
     }
 
     public String sha256(String data) {

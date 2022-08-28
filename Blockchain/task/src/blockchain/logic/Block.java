@@ -1,8 +1,11 @@
 package blockchain.logic;
 
+import blockchain.Message;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.List;
 
 
 public final class Block implements Serializable {
@@ -12,8 +15,8 @@ public final class Block implements Serializable {
     private final String hash;
     private final String magic;
 
-    Block(BigInteger id, BigInteger timestamp, String prevHash, String message, String hash, String magic) {
-        this(new BlockInfo(id, timestamp, prevHash, message), hash, magic);
+    Block(BigInteger id, BigInteger timestamp, String prevHash, List<Message> messages, String hash, String magic) {
+        this(new BlockInfo(id, timestamp, prevHash, messages), hash, magic);
     }
 
     Block(BlockInfo info, String hash, String magic) {
@@ -49,7 +52,7 @@ public final class Block implements Serializable {
                 "Magic number: " + magic + "\n" +
                 "Hash of the previous block: \n" + info.prevHash() + "\n" +
                 "Hash of the block: \n" + hash + "\n" +
-                "Block data: " + info.message();
+                "Block data: " + info.format();
     }
 }
 
