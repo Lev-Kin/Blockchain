@@ -1,32 +1,28 @@
-package blockchain;
+package blockchain.economy;
 
+import blockchain.User;
+
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
-public class Message {
-    private final PublicKey publicKey;
-    private final String name;
+public class Transaction {
     private final String data;
+    private final PublicKey publicKey;
     private final byte[] signature;
 
-    public Message(User user, String data)
+    public Transaction(User from, User to, BigInteger cash)
             throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-
-        this.publicKey = user.getPublicKey();
-        this.name = user.getName();
-        this.data = data;
-        this.signature = MessageManager.sign(data, user.getPrivateKey());
+        this.data = from.getName() + " sent " + cash + " VC to " + to.getName();
+        this.publicKey = from.getPublicKey();
+        this.signature = TransactionManager.sign(data, from.getPrivateKey());
     }
 
     public PublicKey getPublicKey() {
         return publicKey;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public String getData() {
@@ -37,10 +33,6 @@ public class Message {
         return signature;
     }
 
-    @Override
-    public String toString() {
-        return name + ": " + data;
-    }
 }
 
 

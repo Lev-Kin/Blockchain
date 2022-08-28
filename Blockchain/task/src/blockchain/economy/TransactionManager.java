@@ -1,4 +1,4 @@
-package blockchain;
+package blockchain.economy;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -13,11 +13,10 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 
-public class MessageManager {
-
+public class TransactionManager {
     private final Cipher cipher;
 
-    public MessageManager() throws NoSuchPaddingException, NoSuchAlgorithmException {
+    public TransactionManager() throws NoSuchPaddingException, NoSuchAlgorithmException {
         this.cipher = Cipher.getInstance("RSA");
     }
 
@@ -62,13 +61,13 @@ public class MessageManager {
         return rsa.sign();
     }
 
-    public static boolean verify(Message message)
+    public static boolean verify(Transaction transaction)
             throws SignatureException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
         Signature rsa = Signature.getInstance("SHA1withRSA");
-        rsa.initVerify(message.getPublicKey());
-        rsa.update(message.getData().getBytes());
+        rsa.initVerify(transaction.getPublicKey());
+        rsa.update(transaction.getData().getBytes());
 
-        return rsa.verify(message.getSignature());
+        return rsa.verify(transaction.getSignature());
     }
 
 }

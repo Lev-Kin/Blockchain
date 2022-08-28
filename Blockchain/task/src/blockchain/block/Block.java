@@ -1,11 +1,8 @@
-package blockchain.logic;
-
-import blockchain.Message;
+package blockchain.block;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.List;
 
 
 public final class Block implements Serializable {
@@ -15,10 +12,6 @@ public final class Block implements Serializable {
     private final String hash;
     private final String magic;
 
-    Block(BigInteger id, BigInteger timestamp, String prevHash, List<Message> messages, String hash, String magic) {
-        this(new BlockInfo(id, timestamp, prevHash, messages), hash, magic);
-    }
-
     Block(BlockInfo info, String hash, String magic) {
         this.info = info;
         this.hash = hash;
@@ -26,15 +19,7 @@ public final class Block implements Serializable {
     }
 
     public BigInteger getId() {
-        return info.id();
-    }
-
-    public BigInteger getTimestamp() {
-        return info.timestamp();
-    }
-
-    public String getPrevHash() {
-        return info.prevHash();
+        return info.getId();
     }
 
     public String getHash() {
@@ -45,16 +30,18 @@ public final class Block implements Serializable {
         return magic;
     }
 
+    public BlockInfo getInfo() {
+        return info;
+    }
+
     @Override
     public String toString() {
-        return "Id: " + info.id() + "\n" +
-                "Timestamp: " + info.timestamp() + "\n" +
+        return "Id: " + info.getId() + "\n" +
+                "Timestamp: " + info.getTimestamp() + "\n" +
                 "Magic number: " + magic + "\n" +
-                "Hash of the previous block: \n" + info.prevHash() + "\n" +
+                "Hash of the previous block: \n" + info.getPrevHash() + "\n" +
                 "Hash of the block: \n" + hash + "\n" +
                 "Block data: " + info.format();
     }
 }
-
-
 

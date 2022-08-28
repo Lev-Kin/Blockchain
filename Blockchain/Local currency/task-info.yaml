@@ -245,6 +245,420 @@ files:
         }
     }
   learner_created: false
+- name: src/blockchain/SerialOperator.java
+  visible: true
+  text: |+
+    package blockchain;
+
+    import java.io.*;
+
+    public class SerialOperator<T extends Serializable> {
+        private final String file;
+
+        public SerialOperator(String file) {
+            this.file = file;
+        }
+
+        @SuppressWarnings("unchecked")
+        public T deserialize() {
+            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+                return (T) in.readObject();
+            } catch (ClassNotFoundException | IOException e) {
+                return null;
+            }
+        }
+
+        public boolean serialize(T t) {
+            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file))) {
+                out.writeObject(t);
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
+    }
+
+
+  learner_created: true
+- name: src/blockchain/User.java
+  visible: true
+  text: |+
+    package blockchain;
+
+    import java.security.*;
+
+    public class User {
+        private final String name;
+        private final PrivateKey privateKey;
+        private final PublicKey publicKey;
+
+        public User(String name, int size) throws NoSuchAlgorithmException {
+            this.name = name;
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            generator.initialize(size);
+            KeyPair pair = generator.generateKeyPair();
+            this.privateKey = pair.getPrivate();
+            this.publicKey = pair.getPublic();
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public PrivateKey getPrivateKey() {
+            return privateKey;
+        }
+
+        public PublicKey getPublicKey() {
+            return publicKey;
+        }
+
+    }
+
+  learner_created: true
+- name: build.gradle
+  visible: true
+  text: |+
+    plugins {
+        id 'java'
+    }
+
+    group 'com.genspark'
+    version '1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation 'commons-codec:commons-codec:1.15'
+    }
+
+  learner_created: true
+- name: src/blockchain/Util.java
+  visible: true
+  learner_created: true
+- name: src/blockchain/Miner.java
+  visible: true
+  learner_created: true
+- name: src/blockchain/block/BlockManager.java
+  visible: true
+  text: |+
+    package blockchain.logic;
+
+    import blockchain.Message;
+    import blockchain.MessageManager;
+
+    import java.math.BigInteger;
+    import java.nio.charset.StandardCharsets;
+    import java.security.InvalidKeyException;
+    import java.security.MessageDigest;
+    import java.security.NoSuchAlgorithmException;
+    import java.security.SignatureException;
+    import java.security.spec.InvalidKeySpecException;
+    import java.util.Date;
+    import java.util.List;
+
+    public class BlockManager {
+        private volatile int zeros;
+        private volatile int averageTime;
+
+        public BlockManager(int zeros, int averageTime) {
+            this.zeros = zeros;
+            this.averageTime = averageTime;
+        }
+
+        public Block createBlock(BlockInfo info, String magic) {
+            String hash = sha256(info, magic);
+            return validate(hash) && verify(info.messages()) ? new Block(info, hash, magic) : null;
+        }
+
+        public BlockInfo createBlockInfo(Block block, List<Message> messages) {
+            BigInteger id = block == null ? BigInteger.ONE : block.getId().add(BigInteger.ONE);
+            BigInteger timestamp = BigInteger.valueOf(new Date().getTime());
+            String prevHash = block == null ? "0" : block.getHash();
+            return new BlockInfo(id, timestamp, prevHash, messages);
+        }
+
+        public boolean verify(List<Message> messages) {
+            for (var message : messages) {
+                try {
+                    if (!MessageManager.verify(message)) {
+                        return false;
+                    }
+                } catch (SignatureException | NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public synchronized void updateZeros(int time, int size) {
+            this.averageTime = averageTime + ((time - averageTime) / size);
+
+            if (averageTime > time) {
+                zeros++;
+                System.out.println("N was increased to " + zeros);
+            } else if (averageTime == time) {
+                System.out.println("N stays the same");
+            } else {
+                this.zeros = zeros == 0 ? 0 : zeros - 1;
+                System.out.println("N was decreased to " + zeros);
+            }
+        }
+
+        public boolean validate(String hash) {
+            return hash.startsWith("0".repeat(zeros));
+        }
+
+        public String sha256(BlockInfo info, String magic) {
+            return sha256(info.prevHash() + magic + info.id() + info.timestamp() + info.messages());
+        }
+
+        public String sha256(String data) {
+            try {
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                byte[] hash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
+                StringBuilder hexes = new StringBuilder();
+                for (byte elem : hash) {
+                    String hex = Integer.toHexString(0xff & elem);
+                    if (hex.length() == 1) hexes.append('0');
+                    hexes.append(hex);
+                }
+                return hexes.toString();
+            } catch (Exception e) {
+                throw new RuntimeException();
+            }
+        }
+    }
+
+
+  learner_created: true
+- name: src/blockchain/block/Block.java
+  visible: true
+  text: |+
+    package blockchain.logic;
+
+    import blockchain.Message;
+
+    import java.io.Serial;
+    import java.io.Serializable;
+    import java.math.BigInteger;
+    import java.util.List;
+
+
+    public final class Block implements Serializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+        private final BlockInfo info;
+        private final String hash;
+        private final String magic;
+
+        Block(BigInteger id, BigInteger timestamp, String prevHash, List<Message> messages, String hash, String magic) {
+            this(new BlockInfo(id, timestamp, prevHash, messages), hash, magic);
+        }
+
+        Block(BlockInfo info, String hash, String magic) {
+            this.info = info;
+            this.hash = hash;
+            this.magic = magic;
+        }
+
+        public BigInteger getId() {
+            return info.id();
+        }
+
+        public BigInteger getTimestamp() {
+            return info.timestamp();
+        }
+
+        public String getPrevHash() {
+            return info.prevHash();
+        }
+
+        public String getHash() {
+            return hash;
+        }
+
+        public String getMagic() {
+            return magic;
+        }
+
+        @Override
+        public String toString() {
+            return "Id: " + info.id() + "\n" +
+                    "Timestamp: " + info.timestamp() + "\n" +
+                    "Magic number: " + magic + "\n" +
+                    "Hash of the previous block: \n" + info.prevHash() + "\n" +
+                    "Hash of the block: \n" + hash + "\n" +
+                    "Block data: " + info.format();
+        }
+    }
+
+
+
+  learner_created: true
+- name: src/blockchain/block/BlockInfo.java
+  visible: true
+  text: |+
+    package blockchain.logic;
+
+    import blockchain.Message;
+
+    import java.io.Serializable;
+    import java.math.BigInteger;
+    import java.util.List;
+    import java.util.stream.Collectors;
+
+
+    public record BlockInfo(BigInteger id, BigInteger timestamp, String prevHash, List<Message> messages)
+            implements Serializable {
+
+        public String format() {
+            if (messages.isEmpty()) {
+                return "no messages";
+            }
+
+            return "\n" + messages.stream().map(Message::toString).collect(Collectors.joining("\n"));
+        }
+    }
+
+  learner_created: true
+- name: src/blockchain/economy/Transaction.java
+  visible: true
+  text: |+
+    package blockchain;
+
+    import java.security.InvalidKeyException;
+    import java.security.NoSuchAlgorithmException;
+    import java.security.PublicKey;
+    import java.security.SignatureException;
+    import java.security.spec.InvalidKeySpecException;
+
+    public class Message {
+        private final PublicKey publicKey;
+        private final String name;
+        private final String data;
+        private final byte[] signature;
+
+        public Message(User user, String data)
+                throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+
+            this.publicKey = user.getPublicKey();
+            this.name = user.getName();
+            this.data = data;
+            this.signature = MessageManager.sign(data, user.getPrivateKey());
+        }
+
+        public PublicKey getPublicKey() {
+            return publicKey;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getData() {
+            return data;
+        }
+
+        public byte[] getSignature() {
+            return signature;
+        }
+
+        @Override
+        public String toString() {
+            return name + ": " + data;
+        }
+    }
+
+
+  learner_created: true
+- name: src/blockchain/economy/TransactionManager.java
+  visible: true
+  text: |+
+    package blockchain;
+
+    import org.apache.commons.codec.binary.Base64;
+
+    import javax.crypto.BadPaddingException;
+    import javax.crypto.Cipher;
+    import javax.crypto.IllegalBlockSizeException;
+    import javax.crypto.NoSuchPaddingException;
+    import java.nio.charset.StandardCharsets;
+    import java.security.*;
+    import java.security.spec.InvalidKeySpecException;
+    import java.security.spec.PKCS8EncodedKeySpec;
+    import java.security.spec.X509EncodedKeySpec;
+
+
+    public class MessageManager {
+
+        private final Cipher cipher;
+
+        public MessageManager() throws NoSuchPaddingException, NoSuchAlgorithmException {
+            this.cipher = Cipher.getInstance("RSA");
+        }
+
+        public String encrypt(String msg, PrivateKey key)
+                throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException {
+            this.cipher.init(Cipher.ENCRYPT_MODE, key);
+
+            return Base64.encodeBase64String(cipher.doFinal(msg.getBytes(StandardCharsets.UTF_8)));
+        }
+
+        public String decrypt(String msg, PublicKey key)
+                throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+            this.cipher.init(Cipher.DECRYPT_MODE, key);
+
+            return new String(cipher.doFinal(Base64.decodeBase64(msg)), StandardCharsets.UTF_8);
+        }
+
+        public static PrivateKey getPrivateKey(String key)
+                throws InvalidKeySpecException, NoSuchAlgorithmException {
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(
+                    Base64.encodeBase64(key.getBytes(StandardCharsets.UTF_8)));
+            KeyFactory factory = KeyFactory.getInstance("RSA");
+
+            return factory.generatePrivate(spec);
+        }
+
+        public static PublicKey getPublicKey(String key)
+                throws InvalidKeySpecException, NoSuchAlgorithmException {
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(
+                    Base64.encodeBase64(key.getBytes(StandardCharsets.UTF_8)));
+            KeyFactory factory = KeyFactory.getInstance("RSA");
+
+            return factory.generatePublic(spec);
+        }
+
+        public static byte[] sign(String msg, PrivateKey key)
+                throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+            Signature rsa = Signature.getInstance("SHA1withRSA");
+            rsa.initSign(key);
+            rsa.update(msg.getBytes());
+
+            return rsa.sign();
+        }
+
+        public static boolean verify(Message message)
+                throws SignatureException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
+            Signature rsa = Signature.getInstance("SHA1withRSA");
+            rsa.initVerify(message.getPublicKey());
+            rsa.update(message.getData().getBytes());
+
+            return rsa.verify(message.getSignature());
+        }
+
+    }
+
+
+  learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5418#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">JetBrains
+    Academy</a> to continue learning.
+  time: Sun, 28 Aug 2022 09:51:12 UTC
 record: -1
